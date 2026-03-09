@@ -1,4 +1,6 @@
 'use client'
+import EditAssetModal from '@/components/EditAssetModal'
+
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
@@ -13,6 +15,7 @@ interface Asset {
   auto_renewal: boolean
   client_id: string
   registrar: string
+  notes?: string
 }
 
 interface Client {
@@ -24,6 +27,8 @@ interface Client {
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [clients, setClients] = useState<Client[]>([])
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null)
+
   const [loading, setLoading] = useState(true)
   const [showNewAsset, setShowNewAsset] = useState(false)
   const [showNewClient, setShowNewClient] = useState(false)
@@ -60,7 +65,8 @@ export default function DashboardPage() {
           expiration_date,
           renewal_cost,
           auto_renewal,
-          registrar
+          registrar,
+          notes
         )
       `)
       .eq('user_id', userId)
@@ -113,6 +119,7 @@ export default function DashboardPage() {
       expiration_date: formData.get('expiration_date'),
       renewal_cost: parseFloat((formData.get('renewal_cost') as string) || '0'),
       auto_renewal: formData.get('auto_renewal') === 'on',
+      notes: formData.get('notes'),
     })
 
     if (error) {
@@ -322,6 +329,17 @@ export default function DashboardPage() {
                   />
                 </div>
 
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Notes
+                  </label>
+                  <textarea
+                    name="notes"
+                    placeholder="Any additional notes"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+
                 <div className="mb-6 flex items-center">
                   <input
                     type="checkbox"
@@ -411,13 +429,21 @@ export default function DashboardPage() {
                                     {asset.registrar || 'Unknown'}
                                   </p>
                                 </div>
-                                <span
-                                  className={`px-3 py-1 rounded-full text-xs font-bold ${getUrgencyBadge(
-                                    days
-                                  )}`}
-                                >
-                                  {days} days
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={`px-3 py-1 rounded-full text-xs font-bold ${getUrgencyBadge(
+                                      days
+                                    )}`}
+                                  >
+                                    {days} days
+                                  </span>
+                                  <button
+                                    onClick={() => setEditingAsset(asset)}
+                                    className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 font-medium"
+                                  >
+                                    Edit
+                                  </button>
+                                </div>
                               </div>
 
                               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -443,6 +469,12 @@ export default function DashboardPage() {
                                   ✓ Auto-renewal enabled
                                 </p>
                               )}
+
+                              {asset.notes && (
+                                <p className="mt-2 text-xs opacity-75">
+                                  📝 {asset.notes}
+                                </p>
+                              )}
                             </div>
                           )
                         })}
@@ -458,6 +490,18 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Edit Asset Modal */}
+      {editingAsset && (
+        <EditAssetModal
+          asset={editingAsset}
+          onClose={() => setEditingAsset(null)}
+          onUpdate={() => {
+            setEditingAsset(null)
+            if (user) fetchClients(user.id)
+          }}
+        />
+      )}
     </div>
   )
 }
