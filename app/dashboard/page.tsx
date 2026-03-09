@@ -70,7 +70,8 @@ export default function DashboardPage() {
       console.error('Error fetching clients:', error)
       alert('Error loading data')
     } else {
-      setClients(data || [])
+      setClients(data as Client[] || [])
+
     }
     setLoading(false)
   }
