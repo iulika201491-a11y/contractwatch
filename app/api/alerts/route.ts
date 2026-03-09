@@ -45,7 +45,8 @@ export async function POST() {
         console.log('Sending email to:', user.email)
 
         const emailResult = await resend.emails.send({
-          from: 'alerts@contractwatch.io',
+         from: 'onboarding@resend.dev',
+
           to: user.email,
           subject: `⏰ Renewal alert: ${asset.name} expires today`,
           html: `<p>Your asset <strong>${asset.name}</strong> expires TODAY.</p><p><a href="https://contractwatch.vercel.app/dashboard">View in ContractWatch</a></p>`
