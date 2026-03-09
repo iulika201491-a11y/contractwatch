@@ -1,5 +1,6 @@
 'use client'
-import EditAssetModal from '@/components/EditAssetModal'
+import EditAssetModal from '@/app/components/EditAssetModal'
+
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
