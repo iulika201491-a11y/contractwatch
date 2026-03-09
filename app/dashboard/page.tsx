@@ -39,19 +39,25 @@ export default function DashboardPage() {
 
   // Get current user and load data
   useEffect(() => {
-    const getSession = async () => {
-      const { data } = await supabase.auth.getSession()
-      
-      if (!data.session) {
-        router.push('/auth')
-        return
-      }
-      
+  const getSession = async () => {
+    // First check localStorage for existing session
+    const storedSession = localStorage.getItem('contractwatch-auth')
+    
+    const { data } = await supabase.auth.getSession()
+    
+    if (!data.session && !storedSession) {
+      router.push('/auth')
+      return
+    }
+    
+    if (data.session) {
       setUser(data.session.user)
       fetchClients(data.session.user.id)
     }
-    getSession()
-  }, [router])
+  }
+  getSession()
+}, [router])
+
 
   const fetchClients = async (userId: string) => {
     const { data, error } = await supabase
